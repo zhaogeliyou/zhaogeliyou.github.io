@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>title</title>
+</head>
+
+<body>
+    <canvas id='' width=800 height=500 style='border:1px solid red'></canvas>
+</body>
+
+</html>
+<script type="text/javascript" src="jquery-1.12.4.min.js"></script>
+<script>
+    var canvas = document.querySelector("canvas");
+
+    function Clock(opt) {
+        if (!opt) throw new Error("请输入参数");
+
+        var requireArgs = "canvas,bigX,bigY,bigRadius".split(",");
+        requireArgs.forEach(function (v) {
+            if (!opt.hasOwnProperty(v)) throw new Error("请给参数提供属性" + v);
+        });
+
+        var defaultOpt = {
+             bigColor: "blue",
+        smallLength: 10,
+        bigLength: 20,
+        lineWidth: 8,
+        secondLength: 50,
+        minuLength: 40,
+        hourLength: 30,
+        tick: {
+            small: {
+                length: 10,
+                width: 4
+            },
+            big: {
+                length: 15,
+                width: 8
+            }
+        }
+        }
+        $.extend(this,defaultOpt, opt);
+        this.ctx = opt.canvas.getContext("2d");
+        var _this = this;
+        setInterval(function() {
+            _this.init();            
+        },100);
+        this.init();
+
+    }
+
+    Clock.prototype = {
+        constractor: Clock,
+        init: function () {
+            this.ctx.clearRect(0,0,canvas.width,canvas.height)
+            this.drawBig();
+            this.drawTick();
+            this.drawSecond();
+            this.drawMinu();
+            this.drawHour();
+        },
+        drawBig: function () {
+            this.ctx.beginPath();
+            this.ctx.lineWidth = this.lineWidth;
+            this.ctx.strokeStyle = this.bigColor;
+            this.ctx.arc(this.bigX, this.bigY, this.bigRadius, 0, Math.PI * 2);
+            this.ctx.stroke();
+        },
+        drawTick: function () {
+            for (var i = 0; i < 60; i++) {
+                var singleRadian = 2 * Math.PI / 60 * i;
+                var width;
+                var length;
+
+                width = this.tick[i % 5 == 0 ? "big" : "small"].width;
+                length = this.tick[i % 5 == 0 ? "big" : "small"].length;
+                //起点
+                var y1 = Math.sin(singleRadian) * (this.bigRadius - this.lineWidth / 2) + this.bigY;
+                var x1 = Math.cos(singleRadian) * (this.bigRadius - this.lineWidth / 2) + this.bigX;
+
+                //终点
+                var y2 = Math.sin(singleRadian) * (this.bigRadius - length) + this.bigY;
+                var x2 = Math.cos(singleRadian) * (this.bigRadius - length) + this.bigX;
+
+                this.ctx.beginPath();
+                this.ctx.strokeStyle = "black";
+                this.ctx.lineWidth = width;
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+
+                if (i % 5 == 0) {
+                   y2 = Math.sin(singleRadian-Math.PI/3) * (this.bigRadius - length-10) + this.bigY;
+                    x2 = Math.cos(singleRadian-Math.PI/3) * (this.bigRadius - length-10) + this.bigX;
+                    this.drawText(i/5+1, x2, y2);
+                }
+            };
+        },
+        drawText: function (text, x, y) {
+            this.ctx.beginPath();
+            this.ctx.font = "18px 微软雅黑";
+            this.ctx.textAlign = "center";
+            this.ctx.textBaseline = "middle";
+            this.ctx.fillStyle = "black";
+            this.ctx.fillText(text, x, y);
+        },
+        drawSecond: function() {
+            var second = new Date().getSeconds();
+            var x1 = Math.cos(Math.PI*2/60*second-Math.PI/2)*this.secondLength+this.bigX;
+            var y1 = Math.sin(Math.PI*2/60*second-Math.PI/2)*this.secondLength+this.bigY;
+
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.bigX,this.bigY);
+            this.ctx.lineTo(x1,y1);
+            this.ctx.stroke();
+        },
+         drawMinu: function() {
+            var minu = new Date().getMinutes();
+            var x1 = Math.cos(Math.PI*2/60*minu-Math.PI/2)*this.minuLength+this.bigX;
+            var y1 = Math.sin(Math.PI*2/60*minu-Math.PI/2)*this.minuLength+this.bigY;
+
+            this.ctx.beginPath();
+            this.ctx.strokeStyle="blue";
+            this.ctx.moveTo(this.bigX,this.bigY);
+            this.ctx.lineTo(x1,y1);
+            this.ctx.stroke();
+        },
+        drawHour: function() {
+            var hour = new Date().getHours()%12 +new Date().getMinutes()/60+new Date().getSeconds()/3600;
+            var x1 = Math.cos(Math.PI*2/12*hour-Math.PI/2)*this.hourLength+this.bigX;
+            var y1 = Math.sin(Math.PI*2/12*hour-Math.PI/2)*this.hourLength+this.bigY;
+
+            this.ctx.beginPath();
+            this.ctx.strokeStyle="red";
+            this.ctx.moveTo(this.bigX,this.bigY);
+            this.ctx.lineTo(x1,y1);
+            this.ctx.stroke();
+        }
+    }
+
+    var opt = {
+        canvas:canvas,
+        bigX: 200,
+        bigY: 200,
+        bigRadius: 100,
+        bigColor: "blue",
+        smallLength: 10,
+        bigLength: 20,
+        lineWidth: 8,
+        secondLength: 50,
+        minuLength: 40,
+        hourLength: 30,
+        tick: {
+            small: {
+                length: 10,
+                width: 4
+            },
+            big: {
+                length: 15,
+                width: 8
+            }
+        }
+    }
+    new Clock(opt);
+
+</script>
